@@ -1,0 +1,40 @@
+name: Pipline Demo
+
+on: #trigger
+  push: #condition
+    branches:
+      - main
+
+jobs:
+
+  deploy:
+    run-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with: 
+          python-version: '3.8'
+
+
+      - name: Install Other Dependancies
+        run:
+          - pip install requirements.txt
+
+      - name: Run the project
+        run:
+          uvicorn main app --reload
+
+          env: {{}
+  
+    
+    
+  
+    
+
+
+
+      
+      
