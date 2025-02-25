@@ -27,7 +27,18 @@ jobs:
         run:
           uvicorn main app --reload
 
-          env: {{}
+        env:
+            ssh_key: ${{ secrets.SSH_KEY }}
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: $SSH_KEY
+
+          
+        
+
+          
+          
+
   
     
     
