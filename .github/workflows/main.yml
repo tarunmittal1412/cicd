@@ -18,16 +18,6 @@ jobs:
         with:
           python-version: '3.8'
 
-      - name: Create and activate virtual environment
-        run: |
-          python -m venv env
-          source env/bin/activate
-
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirement.txt
-
       - name: Setup SSH Agent
         uses: webfactory/ssh-agent@v0.5.3
         with:
@@ -36,10 +26,25 @@ jobs:
       - name: Deploy to VM
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@3.86.177.103 << 'EOF'
-          cd /home/ubuntu/git_test
+          # Ensure the directory is correct and cd into it
+          cd /home/ubuntu/git_test || exit 1
+
+          # Check if env exists, if not create it
+          if [ ! -d "env" ]; then
+            python3 -m venv env
+          fi
+
+          # Activate the environment
           source env/bin/activate
+
+          # Pull latest changes
           git pull
+
+          # Install/Update pip and project requirements
+          pip install --upgrade pip
           pip install -r requirements.txt
+
+          # Restart the Uvicorn server
           pkill uvicorn
           nohup uvicorn main:app --host 0.0.0.0 --port 8000 &
           EOF
