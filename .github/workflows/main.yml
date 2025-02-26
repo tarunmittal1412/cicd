@@ -6,11 +6,11 @@ on:
       - main
 
 jobs:
-  deploy:
+  deploy-stage:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Take code
         uses: actions/checkout@v2
 
       - name: Setup Python
@@ -42,12 +42,16 @@ jobs:
           # Activate the virtual environment
           source env/bin/activate
 
+          git pull
+
           # Ensure pip is installed
           python -m ensurepip --default-pip
 
           # Upgrade pip and install requirements (bypassing PEP 668 restrictions)
           python -m pip install --upgrade pip --break-system-packages
           python -m pip install -r requirement.txt --break-system-packages
+
+          
 
           # Restart Uvicorn
           pkill uvicorn || true  # Ignore error if Uvicorn is not running
