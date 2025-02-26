@@ -1,51 +1,36 @@
-name: Pipline Demo
+name: Pipeline Demo # Sets the name of the workflow, visible in the Actions tab on GitHub
 
-on: #trigger
-  push: #condition
-    branches:
-      - main
+on: # Defines the event that triggers the workflow
+  push: # The workflow is triggered on a push event
+    branches: # Specifies which branches will trigger the workflow
+      - main # The workflow will trigger when a push is made to the 'main' branch
 
-jobs:
+jobs: # Defines the jobs to be run
+  deploy: # Names the job 'deploy'
+    runs-on: ubuntu-latest # Specifies the type of virtual machine to run the job on, in this case the latest Ubuntu version
 
-  deploy:
-    run-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    steps: # Defines the steps to be executed in the 'deploy' job
+      - name: Checkout code # Names the first step
+        uses: actions/checkout@v2 # Uses the 'checkout' action to check out the source code of the repository
 
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with: 
-          python-version: '3.8'
+      - name: Setup Python # Names the second step
+        uses: actions/setup-python@v2 # Uses the 'setup-python' action to set up Python
+        with: # Specifies the parameters to pass to the 'setup-python' action
+          python-version: '3.8' # Sets up Python version 3.8
 
+      - name: Install Dependencies # Names the third step
+        run: | # Executes commands in the virtual machine's shell
+          python -m pip install --upgrade pip # Upgrades pip to ensure we have the latest version
+          pip install -r requirements.txt # Installs the dependencies listed in the requirements.txt file
 
-      - name: Install Other Dependancies
-        run:
-          - pip install requirements.txt
-
-      - name: Run the project
-        run:
-          uvicorn main app --reload
-
-        env:
-            ssh_key: ${{ secrets.SSH_KEY }}
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: $SSH_KEY
-
-          
-        
-
-          
-          
-
-  
-    
-    
-  
-    
-
-
-
-      
-      
+      - name: Deploy to VM # Names the fourth step
+        uses: webfactory/ssh-agent@v0.5.3 # Uses the 'ssh-agent' action to setup SSH keys
+        with: # Specifies parameters to pass to the 'ssh-agent' action
+          ssh-private-key: ${{ secrets.SSH_KEY }} # Uses the SSH private key stored in GitHub secrets
+        run: | # Executes a series of commands in the shell
+          ssh -o StrictHostKeyChecking=no ubuntu@3.86.177.103 << EOF # Starts an SSH session to the VM, with key checking disabled for automation
+            cd /home # Changes directory to /home where your application code is stored on the VM
+            git pull # Pulls the latest changes from the repository
+            pkill uvicorn # Kills any running 'uvicorn' processes to stop the current application
+            nohup uvicorn main:app --host 0.0.0.0 --port 8000 & # Starts the FastAPI application with 'uvicorn', running it in the background
+          EOF
