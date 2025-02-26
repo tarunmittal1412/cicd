@@ -26,25 +26,31 @@ jobs:
       - name: Deploy to VM
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@3.86.177.103 << 'EOF'
-          # Ensure the directory is correct and cd into it
+          set -e  # Exit on any command failure
+
+          # Ensure the directory is correct
           cd /home/ubuntu/git_test || exit 1
+
+          # Ensure Python 3 is installed
+          sudo apt update && sudo apt install -y python3 python3-venv python3-pip
 
           # Check if env exists, if not create it
           if [ ! -d "env" ]; then
             python3 -m venv env
           fi
 
-          # Activate the environment
+          # Activate the virtual environment
           source env/bin/activate
 
-          # Pull latest changes
-          git pull
+          # Ensure pip is installed
+          python -m ensurepip --default-pip
 
-          # Install/Update pip and project requirements
-          pip install --upgrade pip
-          pip install -r requirements.txt
+          # Upgrade pip and install requirements (bypassing PEP 668 restrictions)
+          python -m pip install --upgrade pip --break-system-packages
+          python -m pip install -r requirements.txt --break-system-packages
 
-          # Restart the Uvicorn server
-          pkill uvicorn
-          nohup uvicorn main:app --host 0.0.0.0 --port 8000 &
+          # Restart Uvicorn
+          pkill uvicorn || true  # Ignore error if Uvicorn is not running
+          nohup env/bin/uvicorn main:app --host 0.0.0.0 --port 8000 &
+
           EOF
