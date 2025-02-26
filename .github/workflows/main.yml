@@ -35,7 +35,7 @@ jobs:
 
       - name: Deploy to VM
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@172.31.84.228 << 'EOF'
+          ssh -o StrictHostKeyChecking=no ubuntu@3.86.177.103 << 'EOF'
           cd /home/ubuntu/git_test
           source env/bin/activate
           git pull
