@@ -19,7 +19,7 @@ jobs:
 
       - name: Run-Tests
         run: |
-          pip install -r requrement.txt
+          pip install -r requirement.txt
           pip install pytest 
           pip install httpx
           pytest .
