@@ -77,4 +77,19 @@ jobs:
           # Start Uvicorn in the background, redirect logs, and detach process
           nohup env/bin/uvicorn main:app --host 0.0.0.0 --port 8080 > uvicorn.log 2>&1 & disown
 
+          sudo apt install prometheus
+          sudo systemctl enable prometheus
+
+          sudo tee -a /etc/prometheus/prometheus.yml << 'EOF'
+            - job_name: 'fastapi_app'
+              metrics_path: '/metrics'
+              static_configs:
+                - targets: ['localhost:8080']
+
+          sudo systemctl start prometheus
+          sudo  apt install grafana
+          sudo systemctl enable grafana-server 
+
+
+          
           EOF
